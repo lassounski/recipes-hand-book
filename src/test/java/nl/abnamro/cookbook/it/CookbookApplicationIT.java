@@ -1,4 +1,4 @@
-package nl.abnamro.cookbook;
+package nl.abnamro.cookbook.it;
 
 import lombok.SneakyThrows;
 import nl.abnamro.cookbook.model.RecipeDto;

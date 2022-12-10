@@ -18,6 +18,7 @@
 		<java.version>17</java.version>
 
 		<hamcrest-all.version>2.1</hamcrest-all.version>
+		<maven-failsafe-plugin.version>3.0.0-M1</maven-failsafe-plugin.version>
 		<mysql.test-containers.version>1.17.6</mysql.test-containers.version>
 		<mysql-connector-java.version>8.0.31</mysql-connector-java.version>
 		<modelmapper.version>3.0.0</modelmapper.version>
@@ -127,6 +128,24 @@
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven-failsafe-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>nl.abnamro.cookbook.it.**</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
