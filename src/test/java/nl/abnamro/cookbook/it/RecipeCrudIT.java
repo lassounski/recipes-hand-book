@@ -2,9 +2,6 @@ package nl.abnamro.cookbook.it;
 
 import lombok.SneakyThrows;
 import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.search.SearchItem;
-import nl.abnamro.cookbook.model.search.SearchMode;
-import nl.abnamro.cookbook.model.search.SearchRecipeDto;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.junit.jupiter.api.AfterAll;
@@ -25,6 +22,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"classpath:sql/schema.sql", "classpath:sql/data.sql"})
 @AutoConfigureMockMvc
-class CookbookApplicationIT {
+class RecipeCrudIT {
 
     @Autowired
     private IngredientRepository ingredientRepository;
@@ -84,41 +82,7 @@ class CookbookApplicationIT {
                 .andReturn().getResponse().getContentAsString();
         var actualRecipe = Arrays.asList(objectMapper.readValue(response, RecipeDto[].class));
 
-        assertThat(actualRecipe).hasSize(2);
-    }
-
-    @SneakyThrows
-    @Test
-    void shouldGetRecipeByName() {
-        mockMvc.perform(post("/recipes/search/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
-                                .searchItem(SearchItem.builder()
-                                        .field("name")
-                                        .value("non existent")
-                                        .searchMode(SearchMode.EQUALS)
-                                        .build())
-                                .build()
-                        )))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-
-        mockMvc.perform(post("/recipes/search/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
-                                .searchItem(SearchItem.builder()
-                                        .field("name")
-                                        .value("chicken noodles")
-                                        .searchMode(SearchMode.EQUALS)
-                                        .build())
-                                .build()
-                        )))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").doesNotExist())
-                .andExpect(jsonPath("$[0].name").value("chicken noodles"))
-                .andExpect(jsonPath("$[0].vegetarian").value(false))
-                .andExpect(jsonPath("$[0].servings").value(4));
+        assertThat(actualRecipe).hasSizeGreaterThan(2);
     }
 
     @SneakyThrows
@@ -156,9 +120,7 @@ class CookbookApplicationIT {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        var recipes = recipeRepository.findAll();
-
-        assertThat(recipes).hasSize(1);
+        assertThat(recipeRepository.findById(UUID.fromString("d4e49174-77b7-11ed-a1eb-0242ac120002"))).isNotPresent();
     }
 
     @SneakyThrows

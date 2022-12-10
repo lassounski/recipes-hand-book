@@ -1,19 +1,34 @@
 package nl.abnamro.cookbook.service;
 
 import jakarta.persistence.TypedQuery;
+import nl.abnamro.cookbook.model.IngredientEntity;
 import nl.abnamro.cookbook.model.RecipeEntity;
 import nl.abnamro.cookbook.model.search.SearchItem;
 import nl.abnamro.cookbook.model.search.SearchMode;
 import nl.abnamro.cookbook.model.search.SearchRecipeDto;
+import nl.abnamro.cookbook.repository.IngredientRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SearchQueryBuilderTest {
 
+    private IngredientRepository ingredientRepository = mock(IngredientRepository.class);
+
+
     private SearchQueryBuilder searchQueryBuilder = new SearchQueryBuilder();
+
+    @BeforeEach
+    public void setUp() {
+        searchQueryBuilder.setIngredientRepository(ingredientRepository);
+    }
 
     @Test
     void shouldAddMultipleSearchItemsInTheQuery() {
@@ -45,4 +60,25 @@ public class SearchQueryBuilderTest {
         verify(query).setParameter("vegetarian", true);
     }
 
+    @Test
+    void shouldSearchForRecipesContainingChickenAsIngredient() {
+        TypedQuery<RecipeEntity> query = mock(TypedQuery.class);
+        IngredientEntity ingredientEntity = mock(IngredientEntity.class);
+
+        SearchRecipeDto searchRecipeDto = SearchRecipeDto.builder()
+                .searchItem(SearchItem.builder()
+                        .field("ingredientName")
+                        .value("chicken")
+                        .searchMode(SearchMode.CONTAINS_VALUE_IN_INGREDIENTS)
+                        .build())
+                .build();
+        when(ingredientRepository.findByName(eq("chicken")))
+                .thenReturn(Optional.of(ingredientEntity));
+
+        String searchQuery = searchQueryBuilder.buildQueryString(searchRecipeDto);
+        searchQueryBuilder.setParameters(query, searchRecipeDto);
+
+        assertThat(searchQuery).isEqualTo("SELECT r FROM RecipeEntity r WHERE :ingredientName MEMBER OF r.ingredients");
+        verify(query).setParameter("ingredientName", ingredientEntity);
+    }
 }
