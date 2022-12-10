@@ -1,4 +1,4 @@
-package nl.abnamro.cookbook.model.mapper;
+package nl.abnamro.cookbook.mapper;
 
 import nl.abnamro.cookbook.model.IngredientEntity;
 import nl.abnamro.cookbook.model.RecipeDto;

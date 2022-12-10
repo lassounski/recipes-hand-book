@@ -1,6 +1,6 @@
 package nl.abnamro.cookbook.model;
 
-import nl.abnamro.cookbook.model.mapper.RecipeMapper;
+import nl.abnamro.cookbook.mapper.RecipeMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 

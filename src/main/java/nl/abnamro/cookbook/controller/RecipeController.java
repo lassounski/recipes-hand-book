@@ -3,7 +3,7 @@ package nl.abnamro.cookbook.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.SearchRecipeDto;
+import nl.abnamro.cookbook.model.search.SearchRecipeDto;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import nl.abnamro.cookbook.service.RecipeService;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -34,13 +34,19 @@ public class RecipeController {
 
     @GetMapping
     public ResponseEntity recipes() {
+        log.debug("Getting all recipes");
         return ResponseEntity.ok(recipeService.findAll());
     }
 
     @PostMapping
     public ResponseEntity saveRecipe(@RequestBody RecipeDto recipeDto) {
         log.debug("Saving recipe {}", recipeDto);
-        return ResponseEntity.ok(recipeService.update(recipeDto));
+        try{
+            return ResponseEntity.ok(recipeService.save(recipeDto));
+        } catch (Exception e) {
+            log.error("Error saving recipe {}", recipeDto, e);
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{uuid}")

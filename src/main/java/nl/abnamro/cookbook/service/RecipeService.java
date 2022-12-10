@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 import nl.abnamro.cookbook.model.IngredientEntity;
 import nl.abnamro.cookbook.model.RecipeDto;
 import nl.abnamro.cookbook.model.RecipeEntity;
-import nl.abnamro.cookbook.model.SearchRecipeDto;
-import nl.abnamro.cookbook.model.mapper.RecipeDtoToEntityMapper;
-import nl.abnamro.cookbook.model.mapper.RecipeMapper;
+import nl.abnamro.cookbook.model.search.SearchRecipeDto;
+import nl.abnamro.cookbook.mapper.RecipeDtoToEntityMapper;
+import nl.abnamro.cookbook.mapper.RecipeMapper;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.springframework.stereotype.Service;
@@ -27,8 +27,9 @@ public class RecipeService {
     private final IngredientRepository ingredientRepository;
     private final RecipeMapper recipeMapper;
     private final EntityManager entityManager;
+    private final SearchQueryBuilder searchQueryBuilder;
 
-    public RecipeDto update(RecipeDto recipeDto) {
+    public RecipeDto save(RecipeDto recipeDto) {
         RecipeEntity recipeEntity = mapToEntity(recipeDto);
         return recipeMapper.toDto(recipeRepository.save(recipeEntity));
     }
@@ -69,11 +70,9 @@ public class RecipeService {
 
     public List<RecipeDto> searchRecipe(SearchRecipeDto searchRecipeDto) {
         TypedQuery<RecipeEntity> query = entityManager.createQuery(
-                "SELECT r FROM RecipeEntity r WHERE r.name = :name ", RecipeEntity.class);
+                searchQueryBuilder.buildQueryString(searchRecipeDto), RecipeEntity.class);
 
-        if (searchRecipeDto.getName() != null) {
-            query.setParameter("name", searchRecipeDto.getName());
-        }
+        searchQueryBuilder.setParameters(query, searchRecipeDto);
 
         List<RecipeEntity> recipes = query.getResultList();
 

@@ -1,9 +1,9 @@
 package nl.abnamro.cookbook.service;
 
 import jakarta.persistence.EntityManager;
+import nl.abnamro.cookbook.mapper.RecipeMapper;
 import nl.abnamro.cookbook.model.RecipeDto;
 import nl.abnamro.cookbook.model.RecipeEntity;
-import nl.abnamro.cookbook.model.mapper.RecipeMapper;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.junit.jupiter.api.Test;
@@ -26,8 +26,14 @@ public class RecipeServiceTest {
     private IngredientRepository ingredientRepository = mock(IngredientRepository.class);
     private RecipeMapper recipeMapper = new RecipeMapper();
     private EntityManager entityManager = mock(EntityManager.class);
+    private SearchQueryBuilder searchQueryBuilder = mock(SearchQueryBuilder.class);
 
-    private RecipeService recipeService = new RecipeService(recipeRepository, ingredientRepository, recipeMapper, entityManager);
+    private RecipeService recipeService = new RecipeService(recipeRepository,
+            ingredientRepository,
+            recipeMapper,
+            entityManager,
+            searchQueryBuilder
+    );
 
     @Test
     void shouldLookForExistingIngredientsBeforeSavingRecipe() {
@@ -42,7 +48,7 @@ public class RecipeServiceTest {
         RecipeEntity recipeEntity = recipeMapper.toEntity(recipeDto);
         when(recipeRepository.save(any(RecipeEntity.class))).thenReturn(recipeEntity);
         // when
-        recipeService.update(recipeDto);
+        recipeService.save(recipeDto);
         // then
         verify(recipeRepository).save(any(RecipeEntity.class));
         verify(ingredientRepository).findByName("ingredient 1");
@@ -62,7 +68,7 @@ public class RecipeServiceTest {
         RecipeEntity recipeEntity = recipeMapper.toEntity(recipeDto);
         when(recipeRepository.save(any(RecipeEntity.class))).thenReturn(recipeEntity);
         // when
-        recipeService.update(recipeDto);
+        recipeService.save(recipeDto);
         // then
         verify(recipeRepository).save(any(RecipeEntity.class));
     }
@@ -105,4 +111,6 @@ public class RecipeServiceTest {
                 .extracting(RecipeDto::getName)
                 .containsExactlyInAnyOrder("recipe name", "recipe name 2");
     }
+
+
 }

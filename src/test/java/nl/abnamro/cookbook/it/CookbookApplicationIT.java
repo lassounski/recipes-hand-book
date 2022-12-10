@@ -2,7 +2,9 @@ package nl.abnamro.cookbook.it;
 
 import lombok.SneakyThrows;
 import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.SearchRecipeDto;
+import nl.abnamro.cookbook.model.search.SearchItem;
+import nl.abnamro.cookbook.model.search.SearchMode;
+import nl.abnamro.cookbook.model.search.SearchRecipeDto;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.junit.jupiter.api.AfterAll;
@@ -35,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"classpath:sql/schema.sql", "classpath:sql/data.sql"})
 @AutoConfigureMockMvc
 class CookbookApplicationIT {
@@ -91,18 +93,26 @@ class CookbookApplicationIT {
         mockMvc.perform(post("/recipes/search/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
-                                .name("non existent")
+                                .searchItem(SearchItem.builder()
+                                        .field("name")
+                                        .value("non existent")
+                                        .searchMode(SearchMode.EQUALS)
+                                        .build())
                                 .build()
                         )))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
-         mockMvc.perform(post("/recipes/search/")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
-                        .name("chicken noodles")
-                        .build()
-                )))
+        mockMvc.perform(post("/recipes/search/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
+                                .searchItem(SearchItem.builder()
+                                        .field("name")
+                                        .value("chicken noodles")
+                                        .searchMode(SearchMode.EQUALS)
+                                        .build())
+                                .build()
+                        )))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").doesNotExist())
@@ -149,15 +159,6 @@ class CookbookApplicationIT {
         var recipes = recipeRepository.findAll();
 
         assertThat(recipes).hasSize(1);
-    }
-
-    @SneakyThrows
-    @Test
-    void shouldReturn404WhenDeletingNonExistentRecipe() {
-        mockMvc.perform(delete("/recipes/11177333-77b7-11ed-7777-0242ac120002")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isNotFound());
     }
 
     @SneakyThrows
