@@ -1,15 +1,10 @@
 package nl.abnamro.cookbook.repository;
 
-import nl.abnamro.cookbook.model.RecipeEntity;
-import org.springframework.data.repository.ListCrudRepository;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
 import java.util.UUID;
 
-public interface RecipeRepository extends ListCrudRepository<RecipeEntity, UUID> {
-
-    Optional<RecipeEntity> findByName(String name);
-
-
+public interface RecipeRepository extends JpaRepository<RecipeEntity, UUID> {
 }
 

@@ -1,18 +1,18 @@
 package nl.abnamro.cookbook.service;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
-import nl.abnamro.cookbook.model.IngredientEntity;
-import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.RecipeEntity;
-import nl.abnamro.cookbook.model.search.SearchRecipeDto;
 import nl.abnamro.cookbook.mapper.RecipeDtoToEntityMapper;
 import nl.abnamro.cookbook.mapper.RecipeMapper;
+import nl.abnamro.cookbook.model.db.IngredientEntity;
+import nl.abnamro.cookbook.model.RecipeDto;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
+import nl.abnamro.cookbook.model.search.SearchRecipeDto;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +40,7 @@ public class RecipeService {
         if (savedRecipeOptional.isEmpty()) {
             return Optional.empty();
         }else{
+            recipeDto.setId(uuid);
             RecipeEntity savedRecipe = savedRecipeOptional.get();
             RecipeDtoToEntityMapper.INSTANCE.updateRecipeFromDto(recipeDto, savedRecipe);
             reconnectIngredients(savedRecipe);
@@ -85,5 +86,10 @@ public class RecipeService {
         return recipeRepository.findAll().stream()
                 .map(recipeEntity -> recipeMapper.toDto(recipeEntity))
                 .collect(Collectors.toSet());
+    }
+
+    public Optional<RecipeDto> findById(UUID id) {
+        return recipeRepository.findById(id)
+                .map(recipeEntity -> recipeMapper.toDto(recipeEntity));
     }
 }

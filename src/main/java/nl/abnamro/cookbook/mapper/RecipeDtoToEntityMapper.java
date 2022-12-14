@@ -1,8 +1,8 @@
 package nl.abnamro.cookbook.mapper;
 
-import nl.abnamro.cookbook.model.IngredientEntity;
+import nl.abnamro.cookbook.model.db.IngredientEntity;
 import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.RecipeEntity;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;

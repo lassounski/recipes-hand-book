@@ -1,13 +1,13 @@
 package nl.abnamro.cookbook.service;
 
-import jakarta.persistence.EntityManager;
 import nl.abnamro.cookbook.mapper.RecipeMapper;
 import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.RecipeEntity;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.junit.jupiter.api.Test;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +34,6 @@ public class RecipeServiceTest {
             entityManager,
             searchQueryBuilder
     );
-
     @Test
     void shouldLookForExistingIngredientsBeforeSavingRecipe() {
         // given
@@ -112,5 +111,19 @@ public class RecipeServiceTest {
                 .containsExactlyInAnyOrder("recipe name", "recipe name 2");
     }
 
+    @Test
+    void shouldFindSingleRecipe() {
+        UUID recipeUUID = UUID.randomUUID();
+        RecipeEntity recipeEntity = RecipeEntity.builder()
+                .id(recipeUUID)
+                .name("recipe name")
+                .build();
+        when(recipeRepository.findById(eq(recipeUUID))).thenReturn(Optional.of(recipeEntity));
 
+        Optional<RecipeDto> recipe = recipeService.findById(recipeUUID);
+
+        verify(recipeRepository).findById(eq(recipeUUID));
+        assertThat(recipe).isPresent();
+        assertThat(recipe.get().getName()).isEqualTo("recipe name");
+    }
 }

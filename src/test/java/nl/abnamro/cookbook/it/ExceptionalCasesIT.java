@@ -2,6 +2,9 @@ package nl.abnamro.cookbook.it;
 
 import lombok.SneakyThrows;
 import nl.abnamro.cookbook.model.RecipeDto;
+import nl.abnamro.cookbook.model.search.SearchItem;
+import nl.abnamro.cookbook.model.search.SearchMode;
+import nl.abnamro.cookbook.model.search.SearchRecipeDto;
 import nl.abnamro.cookbook.repository.IngredientRepository;
 import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.junit.jupiter.api.AfterAll;
@@ -82,6 +85,23 @@ public class ExceptionalCasesIT {
         mockMvc.perform(post("/recipes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(recipeDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldReturnBadReqWhenSearchingWithInexistentIngredient() {
+        mockMvc.perform(post("/recipes/search/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
+                                .searchItem(SearchItem.builder()
+                                        .field("ingredientName")
+                                        .value("dinosaur skin")
+                                        .searchMode(SearchMode.CONTAINS_VALUE_IN_INGREDIENTS_NOT)
+                                        .build())
+                                .build()
+                        )))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }

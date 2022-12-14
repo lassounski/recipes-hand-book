@@ -1,7 +1,6 @@
 package nl.abnamro.cookbook.service;
 
-import jakarta.persistence.TypedQuery;
-import nl.abnamro.cookbook.model.IngredientEntity;
+import nl.abnamro.cookbook.model.db.IngredientEntity;
 import nl.abnamro.cookbook.model.search.SearchItem;
 import nl.abnamro.cookbook.model.search.SearchMode;
 import nl.abnamro.cookbook.model.search.SearchRecipeDto;
@@ -9,6 +8,7 @@ import nl.abnamro.cookbook.repository.IngredientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.TypedQuery;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -33,7 +33,12 @@ public class SearchQueryBuilder {
 
             SearchMode.CONTAINS_VALUE_IN_INGREDIENTS_NOT, (builder, searchItem) -> builder.append(":")
                     .append(searchItem.getField())
-                    .append(" NOT MEMBER OF r.ingredients")
+                    .append(" NOT MEMBER OF r.ingredients"),
+
+            SearchMode.LIKE, (builder, searchItem) -> builder.append("r.")
+                    .append(searchItem.getField())
+                    .append(" LIKE :")
+                    .append(searchItem.getField())
     );
 
     private final BiFunction<TypedQuery, SearchItem, TypedQuery> INGREDIENTS_PARAMETER = (typedQuery, searchItem) -> {
@@ -44,6 +49,7 @@ public class SearchQueryBuilder {
 
     private final Map<SearchMode, BiFunction<TypedQuery, SearchItem, TypedQuery>> SEARCH_MODE_TO_PARAMETER = Map.of(
             SearchMode.EQUALS, (query, searchItem) -> query.setParameter(searchItem.getField(), searchItem.getValue()),
+            SearchMode.LIKE, (query, searchItem) -> query.setParameter(searchItem.getField(), "%"+searchItem.getValue()+"%"),
             SearchMode.CONTAINS_VALUE_IN_INGREDIENTS_NOT, INGREDIENTS_PARAMETER,
             SearchMode.CONTAINS_VALUE_IN_INGREDIENTS, INGREDIENTS_PARAMETER
     );

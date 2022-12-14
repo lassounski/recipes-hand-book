@@ -10,6 +10,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,19 +39,27 @@ public class RecipeController {
         return ResponseEntity.ok(recipeService.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity recipe(@PathVariable UUID id) {
+        log.debug("Getting recipe with id {}", id);
+        return recipeService.findById(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity saveRecipe(@RequestBody RecipeDto recipeDto) {
-        log.debug("Saving recipe {}", recipeDto);
+        log.debug("Saving recipe [{}]", recipeDto);
         try{
             return ResponseEntity.ok(recipeService.save(recipeDto));
         } catch (Exception e) {
-            log.error("Error saving recipe {}", recipeDto, e);
+            log.error("Error saving recipe [{}]", recipeDto, e);
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{uuid}")
     public ResponseEntity deleteRecipe(@PathVariable String uuid) {
+        log.debug("Deleting recipe uuid[{}]", uuid);
         try {
             recipeRepository.deleteById(UUID.fromString(uuid));
         } catch (EmptyResultDataAccessException e) {
@@ -61,17 +70,22 @@ public class RecipeController {
 
     @PutMapping("/{uuid}")
     public ResponseEntity updateRecipe(@PathVariable String uuid, @RequestBody RecipeDto recipeDto) {
-        log.debug("Updating recipe {}", recipeDto);
+        log.debug("Updating recipe [{}]", recipeDto);
         return ResponseEntity.ok(recipeService.update(UUID.fromString(uuid), recipeDto));
     }
 
     @PostMapping("/search/")
     public ResponseEntity searchRecipe(@RequestBody SearchRecipeDto searchRecipeDto) {
-        log.debug("Search for recipe {}", searchRecipeDto);
+        log.debug("Search for recipe [{}]", searchRecipeDto);
         List<RecipeDto> recipes =  recipeService.searchRecipe(searchRecipeDto);
         if(recipes.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(recipes);
+    }
+
+    @ExceptionHandler({ Exception.class})
+    public ResponseEntity handleException(Exception e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 }

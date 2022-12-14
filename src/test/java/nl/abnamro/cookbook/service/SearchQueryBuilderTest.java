@@ -1,8 +1,7 @@
 package nl.abnamro.cookbook.service;
 
-import jakarta.persistence.TypedQuery;
-import nl.abnamro.cookbook.model.IngredientEntity;
-import nl.abnamro.cookbook.model.RecipeEntity;
+import nl.abnamro.cookbook.model.db.IngredientEntity;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
 import nl.abnamro.cookbook.model.search.SearchItem;
 import nl.abnamro.cookbook.model.search.SearchMode;
 import nl.abnamro.cookbook.model.search.SearchRecipeDto;
@@ -10,6 +9,7 @@ import nl.abnamro.cookbook.repository.IngredientRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.persistence.TypedQuery;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,5 +80,23 @@ public class SearchQueryBuilderTest {
 
         assertThat(searchQuery).isEqualTo("SELECT r FROM RecipeEntity r WHERE :ingredientName MEMBER OF r.ingredients");
         verify(query).setParameter("ingredientName", ingredientEntity);
+    }
+
+    @Test
+    void shouldPerformFullTextSearchOnInstructionsColumn() {
+        TypedQuery<RecipeEntity> query = mock(TypedQuery.class);
+        SearchRecipeDto searchRecipeDto = SearchRecipeDto.builder()
+                .searchItem(SearchItem.builder()
+                        .field("instructions")
+                        .value("chicken noodle")
+                        .searchMode(SearchMode.LIKE)
+                        .build())
+                .build();
+
+        String searchQuery = searchQueryBuilder.buildQueryString(searchRecipeDto);
+        searchQueryBuilder.setParameters(query, searchRecipeDto);
+
+        assertThat(searchQuery).isEqualTo("SELECT r FROM RecipeEntity r WHERE r.instructions LIKE :instructions");
+        verify(query).setParameter("instructions", "%chicken noodle%");
     }
 }

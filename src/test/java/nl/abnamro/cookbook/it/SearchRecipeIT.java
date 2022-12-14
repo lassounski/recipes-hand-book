@@ -4,8 +4,6 @@ import lombok.SneakyThrows;
 import nl.abnamro.cookbook.model.search.SearchItem;
 import nl.abnamro.cookbook.model.search.SearchMode;
 import nl.abnamro.cookbook.model.search.SearchRecipeDto;
-import nl.abnamro.cookbook.repository.IngredientRepository;
-import nl.abnamro.cookbook.repository.RecipeRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,17 +25,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = {"classpath:sql/schema.sql", "classpath:sql/data.sql"})
 @AutoConfigureMockMvc
 public class SearchRecipeIT {
-
-    @Autowired
-    private IngredientRepository ingredientRepository;
-    @Autowired
-    private RecipeRepository recipeRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,13 +39,11 @@ public class SearchRecipeIT {
     @Container
     private static final MySQLContainer mysql = new MySQLContainer("mysql:latest")
             .withDatabaseName("cookbook_db");
-
     @BeforeAll
     static void setup() {
         mysql.withReuse(true);
         mysql.start();
     }
-
     @AfterAll
     static void tearDown() {
         mysql.stop();
@@ -66,9 +56,6 @@ public class SearchRecipeIT {
         registry.add("spring.datasource.password", mysql::getPassword);
         registry.add("spring.datasource.driver.driver-class-name", mysql::getDriverClassName);
     }
-
-
-
     @SneakyThrows
     @Test
     void shouldGetRecipeByName() {
@@ -97,7 +84,6 @@ public class SearchRecipeIT {
                         )))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").doesNotExist())
                 .andExpect(jsonPath("$[0].name").value("chicken noodles"))
                 .andExpect(jsonPath("$[0].vegetarian").value(false))
                 .andExpect(jsonPath("$[0].servings").value(4));
@@ -155,12 +141,10 @@ public class SearchRecipeIT {
                         )))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").doesNotExist())
                 .andExpect(jsonPath("$[0].name").value("chicken noodles"))
                 .andExpect(jsonPath("$[0].vegetarian").value(false))
                 .andExpect(jsonPath("$[0].servings").value(4));
     }
-
     @SneakyThrows
     @Test
     void shouldGetRecipesThatDoNotContainChicken() {
@@ -176,8 +160,25 @@ public class SearchRecipeIT {
                         )))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").doesNotExist())
                 .andExpect(jsonPath("$[0].name").value("greek salad"))
                 .andExpect(jsonPath("$[0].vegetarian").value(true));
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldSearchForTermInInstructions() {
+        mockMvc.perform(post("/recipes/search/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(SearchRecipeDto.builder()
+                                .searchItem(SearchItem.builder()
+                                        .field("instructions")
+                                        .value("boil")
+                                        .searchMode(SearchMode.LIKE)
+                                        .build())
+                                .build()
+                        )))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("chicken noodles"));
     }
 }

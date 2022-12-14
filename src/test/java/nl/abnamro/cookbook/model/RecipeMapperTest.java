@@ -1,10 +1,13 @@
 package nl.abnamro.cookbook.model;
 
 import nl.abnamro.cookbook.mapper.RecipeMapper;
+import nl.abnamro.cookbook.model.db.IngredientEntity;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,6 +29,7 @@ public class RecipeMapperTest {
         var recipeEntity = recipeMapper.toEntity(recipeDto);
 
         // then
+        assertThat(recipeEntity.getId()).isEqualTo(recipeDto.getId());
         assertThat(recipeEntity.getName()).isEqualTo(recipeDto.getName());
         assertThat(recipeEntity.getInstructions()).isEqualTo(recipeDto.getInstructions());
         assertThat(recipeEntity.getServings()).isEqualTo(recipeDto.getServings());
@@ -37,8 +41,10 @@ public class RecipeMapperTest {
 
     @Test
     void shouldMapEntityToDto() {
+        UUID uuid = UUID.randomUUID();
         // given
         var recipeEntity = RecipeEntity.builder()
+                .id(uuid)
                 .name("recipe name")
                 .instructions("recipe instructions")
                 .servings(4)
@@ -53,6 +59,7 @@ public class RecipeMapperTest {
         var recipeDto = recipeMapper.toDto(recipeEntity);
 
         // then
+        assertThat(recipeDto.getId()).isEqualTo(recipeEntity.getId());
         assertThat(recipeDto.getName()).isEqualTo(recipeEntity.getName());
         assertThat(recipeDto.getInstructions()).isEqualTo(recipeEntity.getInstructions());
         assertThat(recipeDto.getServings()).isEqualTo(recipeEntity.getServings());

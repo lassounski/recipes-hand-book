@@ -1,8 +1,8 @@
 package nl.abnamro.cookbook.mapper;
 
-import nl.abnamro.cookbook.model.IngredientEntity;
+import nl.abnamro.cookbook.model.db.IngredientEntity;
 import nl.abnamro.cookbook.model.RecipeDto;
-import nl.abnamro.cookbook.model.RecipeEntity;
+import nl.abnamro.cookbook.model.db.RecipeEntity;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class RecipeMapper {
                             .map(ingredientName -> IngredientEntity.builder().name(ingredientName).build())
                             .collect(Collectors.toSet())
             );
-        } //else set to null
+        }
         return recipeEntity;
     }
 

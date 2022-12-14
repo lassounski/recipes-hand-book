@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: cookbook_db
+      MYSQL_USER: sa
+      MYSQL_PASSWORD: 1234
+    networks:
+      - recipe_network
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-db:/var/lib/mysql
+      - "./src/main/resources/sql/schema.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./src/main/resources/sql/data.sql:/docker-entrypoint-initdb.d/2.sql"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '1234:8080'
+    depends_on:
+      - mysqldb
+    restart: on-failure
+    networks:
+      - recipe_network
+    volumes:
+      - app:/var/lib/app
+
+networks:
+  recipe_network:
+
+volumes:
+  mysql-db:
+  app:
