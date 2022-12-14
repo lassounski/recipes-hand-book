@@ -1,4 +1,4 @@
-# Cookbook ABN AMRO application
+# Cookbook application
 
 A Spring Web application that allows users to manage recipes through a REST API.
 
@@ -20,9 +20,46 @@ I implemented the search functionality using the following approach:
 3. The field name is used to determine the column in the database that will be used for the search. In a production environment this shall be whitelisted in the backend to avoid querying all columns.
 4. The operator is used to determine the type of search that will be executed. The supported operators are: 
    - `EQUALS` - `r.column = :value`
-   - `CONTAINS_VALUE_IN_INGREDIENTS` - `:value MEMBER OF r.ingredients `
-   - `CONTAINS_VALUE_IN_INGREDIENTS_NOT` - `:value NOT MEMBER OF r.ingredients `
+      
+   Ex:
+   ```
+    {
+         "field": "ingredients",
+         "operator": "CONTAINS_VALUE_IN_INGREDIENTS",
+         "value": "water"
+    }
+    ```
+   - `CONTAINS_VALUE_IN_INGREDIENTS` - `:value MEMBER OF r.ingredients `. Make sure that the ingredient exists in the ingredients table.
+
+   Ex:
+   ```
+    {
+         "field": "ingredients",
+         "operator": "CONTAINS_VALUE_IN_INGREDIENTS_NOT",
+         "value": "water"
+    }
+    ```
+   - `CONTAINS_VALUE_IN_INGREDIENTS_NOT` - `:value NOT MEMBER OF r.ingredients `. Make sure that the ingredient exists in the ingredients table.
+
+   Ex:
+   ```
+    {
+         "field": "instructions",
+         "operator": "LIKE",
+         "value": "chicken"
+    }
+    ```
    - `LIKE` - `r.column LIKE :value` where `:value` is `%:value%`
+      
+   Ex:
+   ```
+    {
+         "field": "instructions",
+         "operator": "LIKE",
+         "value": "chicken"
+    }
+    ```
+
 This approach allows an extensible search functionality. New operators can be added easily and the search operations can be compounded using the `AND` operator.
 
 #### Pagination
