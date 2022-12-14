@@ -55,5 +55,3 @@ Run unit + IT tests:
 ### Using the application
 Go to [http://localhost:1234/api/swagger-ui.html](http://localhost:1234/api/swagger-ui.html) to see the API documentation.
 Here you can try out the API, there are three recipes that are created by default.
-The Swagger UI is not the best for testing the API, I recommend using Postman. 
-It is important to set the `Content-Type` header to `application/json` when using Postman.

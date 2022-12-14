@@ -24,9 +24,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/recipes",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/recipes", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class RecipeController {
 
@@ -46,7 +44,7 @@ public class RecipeController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity saveRecipe(@RequestBody RecipeDto recipeDto) {
         log.debug("Saving recipe [{}]", recipeDto);
         try{
@@ -68,13 +66,13 @@ public class RecipeController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{uuid}")
+    @PutMapping(path = "/{uuid}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity updateRecipe(@PathVariable String uuid, @RequestBody RecipeDto recipeDto) {
         log.debug("Updating recipe [{}]", recipeDto);
         return ResponseEntity.ok(recipeService.update(UUID.fromString(uuid), recipeDto));
     }
 
-    @PostMapping("/search/")
+    @PostMapping(path = "/search/", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity searchRecipe(@RequestBody SearchRecipeDto searchRecipeDto) {
         log.debug("Search for recipe [{}]", searchRecipeDto);
         List<RecipeDto> recipes =  recipeService.searchRecipe(searchRecipeDto);
